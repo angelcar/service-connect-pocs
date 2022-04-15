@@ -23,10 +23,9 @@ const (
 func main() {
 	action := os.Getenv(pingOrPong)
 	log.Printf("%s server starting up...\n", action)
-	err := initServer()
+	err := runInitialTests()
 	if err != nil {
-		log.Printf("%s server got error when initializing: %v\n", action, err)
-		os.Exit(1)
+		log.Printf("%s server got error when running initial tests: %v\n", action, err)
 	}
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
@@ -89,7 +88,7 @@ func sendResponse(response, to string) {
 	defer resp.Body.Close()
 }
 
-func initServer() error {
+func runInitialTests() error {
 	region, err := getRegionFromIMDS()
 	if err != nil {
 		log.Printf("error getting region from IMDS due to error: %v. setting to us-west-2 and continue checking the rest\n", err)
