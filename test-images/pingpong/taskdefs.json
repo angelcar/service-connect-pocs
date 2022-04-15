@@ -1,0 +1,65 @@
+{
+    "family": "sc-pingpong-awsvpc",
+    "networkMode": "awsvpc",
+    "executionRoleArn": "arn:aws:iam::901447253822:role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::901447253822:role/TaskIAMRoleArn",
+    "containerDefinitions": [
+        {
+            "name": "pingpong-server",
+            "image": "public.ecr.aws/u5s6c6g2/sc-poc-pingpong:latest",
+            "memory": 128,
+            "cpu": 100,
+            "portMappings": [
+                {
+                    "containerPort": 8080
+                },
+                {
+                    "containerPort": 9090
+                }
+            ],
+            "dockerLabels": {
+                "name": "pingpong-server"
+            },
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "sc-pingpong-awsvpc",
+                    "awslogs-region": "us-west-2",
+                    "awslogs-stream-prefix": "pingpong-server",
+                    "awslogs-create-group": "true"
+                }
+            }
+        },
+        {
+            "name": "service-connect",
+            "image": "public.ecr.aws/appmesh/aws-appmesh-envoy:v1.20.0.1-prod",
+            "memory": 1024,
+            "cpu": 100,
+            "dockerLabels": {
+                "name": "appnet-agent"
+            },
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "sc-pingpong-awsvpc",
+                    "awslogs-region": "us-west-2",
+                    "awslogs-stream-prefix": "appnet-agent",
+                    "awslogs-create-group": "true"
+                }
+            },
+            "command": [
+                "/usr/bin/envoy",
+                "-c",
+                "/etc/envoy/envoy.yaml",
+                "-l",
+                "debug"
+            ],
+            "environment": [
+                {
+                    "name": "SC_CONFIG",
+                    "value": "value"
+                }
+            ],
+        }
+    ]
+}
