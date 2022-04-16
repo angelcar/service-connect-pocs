@@ -8,7 +8,7 @@ other=""
 if [ "${pingOrPong}" == "ping" ]; then other="pong"; fi
 if [ "${pingOrPong}" == "pong" ]; then other="ping"; fi
 
-scConfig=$(jq ".dnsConfig[0].hostname=\"${other}.my.corp\" | @json" awsvpc_default_sc_conf.json)
+scConfig=$(jq ".dnsConfig[0].hostName=\"${other}.my.corp\" | @json" awsvpc_default_sc_conf.json)
 
 overridesJson=$(jq -c ".containerOverrides[0].environment[0].value=${scConfig} | .containerOverrides[1].environment[0].value=\"${pingOrPong}\"" task_overrides.json)
 
