@@ -19,47 +19,32 @@
             ],
             "dockerLabels": {
                 "name": "pingpong-server"
-            },
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "sc-pingpong-awsvpc",
-                    "awslogs-region": "us-west-2",
-                    "awslogs-stream-prefix": "pingpong-server",
-                    "awslogs-create-group": "true"
-                }
             }
         },
         {
             "name": "service-connect",
-            "image": "public.ecr.aws/appmesh/aws-appmesh-envoy:v1.20.0.1-prod",
+            "image": "public.ecr.aws/u5s6c6g2/sc-poc-pingpong-envoy",
             "memory": 1024,
             "cpu": 100,
             "dockerLabels": {
                 "name": "appnet-agent"
             },
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "sc-pingpong-awsvpc",
-                    "awslogs-region": "us-west-2",
-                    "awslogs-stream-prefix": "appnet-agent",
-                    "awslogs-create-group": "true"
-                }
-            },
-            "command": [
-                "/usr/bin/envoy",
-                "-c",
-                "/etc/envoy/envoy.yaml",
-                "-l",
-                "debug"
-            ],
             "environment": [
                 {
                     "name": "SC_CONFIG",
-                    "value": "value"
+                    "value": "{}"
                 }
             ],
+            "healthCheck": {
+              "retries": 3,
+              "command": [
+                  "CMD-SHELL",
+                  "sleep 1"
+              ],
+              "timeout": 3,
+              "interval": 30,
+              "startPeriod": 2
+          }
         }
     ]
 }

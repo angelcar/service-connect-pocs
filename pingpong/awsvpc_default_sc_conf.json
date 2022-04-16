@@ -1,0 +1,27 @@
+{
+  "containerName": "service-connect",
+  "statsConfig": {
+    "urlPath":"/stats",
+    "port": 9901
+  },
+  "ingressConfig": [
+    {
+      "serviceName": "SC Ping Pong",
+      "listenerName": "ingress_listener",
+      "InterceptPort": 8080
+    }
+  ],
+  "egressConfig": {
+    "listenerName": "egress_listener",
+    "vip": {
+      "ipv4": "169.254.0.0/16"
+    }
+  },
+  "dnsConfig": [
+    {
+      "hostName": "EGRESS_DNS_NAME.my.corp",
+      "ipv4Address": "169.254.1.1"
+    }
+  ]
+
+}
