@@ -9,7 +9,7 @@ dependency=${3:-"dependency"}
 
 scConfig=$(jq ".dnsConfig[0].hostName=\"${dependency}.my.corp\" | .ingressConfig[0].interceptPort=${serverPort} | @json" awsvpc_default_sc_conf.json)
 
-overridesJson=$(jq ".containerOverrides[0].environment[0].value=${scConfig} | .containerOverrides[1].environment[0].value=\"${serverTitle}\" | .containerOverrides[1].environment[1].value=\"${serverPort}\" | .containerOverrides[1].environment[1].value=\"${otherServerPort}\"" task_overrides.json)
+overridesJson=$(jq ".containerOverrides[0].environment[0].value=${scConfig} | .containerOverrides[1].environment[0].value=\"${serverTitle}\" | .containerOverrides[1].environment[1].value=\"${serverPort}\" | .containerOverrides[1].environment[2].value=\"${otherServerPort}\"" task_overrides.json)
 
 aws ecs run-task \
 --task-definition sc-generic-server-awsvpc \
