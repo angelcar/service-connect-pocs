@@ -1,14 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"strings"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -17,13 +15,27 @@ const (
 	ec2IMDSUrl        = "http://169.254.169.254"
 	ecsTMDSV2Url      = "http://169.254.170.2/v2/metadata"
 	httpClientTimeout = 10 * time.Second
-	pingOrPong        = "PING_OR_PONG"
+	serverTitle       = "SERVER_TITLE"
+	serverPort        = "SERVER_PORT"
+	otherServerPort   = "OTHER_SERVER_PORT"
 )
 
+var action string
+
 func main() {
-	action := os.Getenv(pingOrPong)
-	log.Printf("%s server starting up...\n", action)
-	err := runInitialTests()
+	action = os.Getenv(serverTitle)
+	port, err := strconv.Atoi(os.Getenv(serverPort))
+	if err != nil {
+		log.Printf("%s server got error when parsing port from env %v. Assigning 8080\n", action, err)
+		port = 8080
+	}
+	otherPort, err := strconv.Atoi(os.Getenv(otherServerPort))
+	if err != nil {
+		log.Printf("%s server got error when parsing other port from env %v. Assigning 9090\n", action, err)
+		otherPort = 9090
+	}
+	log.Printf("%s:%d server starting up...\n", action, port)
+	err = runInitialTests()
 	if err != nil {
 		log.Printf("%s server got error when running initial tests: %v\n", action, err)
 	}
@@ -31,13 +43,13 @@ func main() {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		server := createServer(8080, pingPongSC)
+		server := createServer(port, serverHandlerForSC)
 		log.Println(server.ListenAndServe())
 	}()
 
 	go func() {
 		defer wg.Done()
-		server := createServer(9090, otherNonSC)
+		server := createServer(otherPort, otherNonSC)
 		log.Println(server.ListenAndServe())
 	}()
 	wg.Wait()
@@ -58,34 +70,9 @@ func otherNonSC(w http.ResponseWriter, req *http.Request) {
 	log.Printf("request headers: %v\n", req.Header)
 	fmt.Fprint(w, "Hello from a Non-SC service")
 }
-func pingPongSC(w http.ResponseWriter, req *http.Request) {
+func serverHandlerForSC(w http.ResponseWriter, req *http.Request) {
 	log.Printf("request headers: %v\n", req.Header)
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		log.Printf("failed to get request body: %v\n", err)
-	}
-	bodyStr := string(body)
-	log.Printf("received %s (%s)\n", bodyStr, req.RemoteAddr)
-
-	bodyArr := strings.Split(bodyStr, " ")
-	var response string
-	if bodyArr[0] == "PING" {
-		response = "PONG from pong.my.corp:8080"
-	} else {
-		response = "PING from ping.my.corp:8080"
-	}
-	sendResponse(response, bodyArr[2])
-}
-
-func sendResponse(response, to string) {
-	log.Printf("senging '%s' to %s\n", response, to)
-	time.Sleep(time.Second)
-	resp, err := http.Post("http://"+to+"", "text/html; charset=UTF-8", bytes.NewBuffer([]byte(response)))
-	if err != nil {
-		log.Printf("Error sending '%s' to %s: %v\n", response, to, err)
-		return
-	}
-	defer resp.Body.Close()
+	fmt.Fprintf(w, "Hello from %s service", action)
 }
 
 func runInitialTests() error {

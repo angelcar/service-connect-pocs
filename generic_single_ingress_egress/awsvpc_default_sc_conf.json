@@ -6,9 +6,8 @@
   },
   "ingressConfig": [
     {
-      "serviceName": "SC Ping Pong",
       "listenerName": "ingress_listener",
-      "InterceptPort": 8080
+      "interceptPort": 9393
     }
   ],
   "egressConfig": {

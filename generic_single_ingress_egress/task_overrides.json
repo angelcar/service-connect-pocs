@@ -1,0 +1,32 @@
+{
+  "containerOverrides": [
+    {
+      "name": "service-connect",
+      "environment": [
+        {
+          "name": "SC_CONFIG",
+          "value": "SC_CONFIG_VALUE"
+        }
+      ]
+    },
+    {
+      "name": "server",
+      "environment": [
+        {
+          "name": "SERVER_TITLE",
+          "value": "SERVER_TITLE_VALUE"
+        },
+        {
+          "name": "SERVER_PORT",
+          "value": "SERVER_PORT_VALUE"
+        },
+        {
+          "name": "OTHER_SERVER_PORT",
+          "value": "OTHER_SERVER_PORT_VALUE"
+        }
+      ]
+    }
+  ]
+}
+
+
