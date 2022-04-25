@@ -14,7 +14,7 @@ egress_port=$(echo ${listener_port_mapping} | jq -c '.egress_listener')
 
 intercept_port=$(echo ${SC_CONFIG} | jq -c '.ingressConfig | .[] | select (.listenerName == "ingress_listener") | .interceptPort ')
 app_port=$intercept_port
-if [ -z "$app_port" ]
+if [[ "$app_port" == "null" || "$app_port" == null ]]
 then
   app_port=${SC_APP_PORT}
 fi
@@ -38,7 +38,7 @@ iptables -t nat -A OUTPUT -p tcp \
   -d ${vipCidr} -j REDIRECT --to-port ${_SC_EGRESS_PORT_}
 
 # setup ingress rules
-if [ -n "$intercept_port" ]
+if [ "$intercept_port" != "null" ]
 then
   iptables -t nat -A PREROUTING -p tcp \
     -m multiport -m addrtype ! --src-type LOCAL \

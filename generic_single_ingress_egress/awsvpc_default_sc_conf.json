@@ -6,8 +6,7 @@
   },
   "ingressConfig": [
     {
-      "listenerName": "ingress_listener",
-      "interceptPort": 9393
+      "listenerName": "ingress_listener"
     }
   ],
   "egressConfig": {

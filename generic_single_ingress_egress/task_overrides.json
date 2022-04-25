@@ -6,6 +6,10 @@
         {
           "name": "SC_CONFIG",
           "value": "SC_CONFIG_VALUE"
+        },
+        {
+          "name": "SC_APP_PORT",
+          "value": "SC_APP_PORT_VALUE"
         }
       ]
     },
