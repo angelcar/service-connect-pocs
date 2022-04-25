@@ -3,7 +3,12 @@
 
 ingress_port=$(echo ${SC_CONFIG} | jq -c '.ingressConfig | .[] | select (.listenerName == "ingress_listener") | .listenerPort ')
 
-if [ -z "$ingress_port" ]
+if [ "${ingress_port}" == "null" || "${ingress_port}" == "0" ]
+then
+  ingress_port=$(echo ${listener_port_mapping} | jq -c '.ingress_listener')
+fi
+
+if [ -z "${ingress_port}" ]
 then
   ingress_port=$(echo ${listener_port_mapping} | jq -c '.ingress_listener')
 fi
