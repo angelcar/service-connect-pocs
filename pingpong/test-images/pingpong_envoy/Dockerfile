@@ -3,4 +3,7 @@ WORKDIR /
 COPY envoy_config/* /etc/envoy/
 COPY start.sh /usr/bin/start.sh
 RUN chmod +x /usr/bin/start.sh
+# Install packages.
+RUN yum -y install jq
+
 ENTRYPOINT /usr/bin/start.sh
