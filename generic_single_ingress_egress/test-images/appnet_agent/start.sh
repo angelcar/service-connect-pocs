@@ -12,11 +12,15 @@ fi
 
 egress_port=$(echo ${listener_port_mapping} | jq -c '.egress_listener')
 
-app_port=$(echo ${SC_CONFIG} | jq -c '.ingressConfig | .[] | select (.listenerName == "ingress_listener") | .interceptPort ')
+intercept_port=$(echo ${SC_CONFIG} | jq -c '.ingressConfig | .[] | select (.listenerName == "ingress_listener") | .interceptPort ')
+app_port=$intercept_port
 if [ -z "$app_port" ]
 then
   app_port=${SC_APP_PORT}
 fi
+
+
+vipCidr=$(echo ${SC_CONFIG} | jq -r '.egressConfig.vip.ipv4')
 
 _SC_INGRESS_PORT_=${ingress_port:-15000}
 _SC_EGRESS_PORT_=${egress_port:-30000}
@@ -28,5 +32,18 @@ sed -i "s/SC_EGRESS_PORT/${_SC_EGRESS_PORT_}/g" "/etc/envoy/lds_config.yaml"
 sed -i "s/SC_APP_PORT/${_SC_APP_PORT_}/g" "/etc/envoy/local_eds.yaml"
 sed -i "s/SC_REMOTE_PORT/${_SC_REMOTE_PORT_}/g" "/etc/envoy/remote_eds.yaml"
 
+
+# Setup egress rules awsvpc mode
+iptables -t nat -A OUTPUT -p tcp \
+  -d ${vipCidr} -j REDIRECT --to-port ${_SC_EGRESS_PORT_}
+
+# setup ingress rules
+if [ -n "$intercept_port" ]
+then
+  iptables -t nat -A PREROUTING -p tcp \
+    -m multiport -m addrtype ! --src-type LOCAL \
+    --dports ${intercept_port} -j REDIRECT \
+    --to-port ${_SC_INGRESS_PORT_} # to SC ingress port
+fi
 
 /usr/bin/envoy -c /etc/envoy/envoy.yaml -l debug
