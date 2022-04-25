@@ -30,6 +30,11 @@
               "timeout": 3,
               "interval": 30,
               "startPeriod": 2
+          },
+          "linuxParameters": {
+            "capabilities": {
+              "add": ["NET_ADMIN", "SYS_ADMIN"]
+            }
           }
         }
     ]

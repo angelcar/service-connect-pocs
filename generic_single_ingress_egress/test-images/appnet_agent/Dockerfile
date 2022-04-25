@@ -5,5 +5,6 @@ COPY start.sh /usr/bin/start.sh
 RUN chmod +x /usr/bin/start.sh
 # Install packages.
 RUN yum -y install jq
+RUN yum -y install iptables
 
 ENTRYPOINT /usr/bin/start.sh
