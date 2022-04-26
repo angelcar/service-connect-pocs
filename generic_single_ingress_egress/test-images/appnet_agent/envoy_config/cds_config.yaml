@@ -11,11 +11,20 @@ resources:
       eds_config:
         path: /etc/envoy/local_eds.yaml
   - "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
-    name: remote_cluster
+    name: remote_cluster_1
     type: EDS
     connect_timeout: 0.25s
     lb_policy: ROUND_ROBIN
     eds_cluster_config:
-      service_name: remote_cluster
+      service_name: remote_cluster_1
       eds_config:
-        path: /etc/envoy/remote_eds.yaml
+        path: /etc/envoy/remote_eds_1.yaml
+  - "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
+    name: remote_cluster_2
+    type: EDS
+    connect_timeout: 0.25s
+    lb_policy: ROUND_ROBIN
+    eds_cluster_config:
+      service_name: remote_cluster_2
+      eds_config:
+        path: /etc/envoy/remote_eds_2.yaml

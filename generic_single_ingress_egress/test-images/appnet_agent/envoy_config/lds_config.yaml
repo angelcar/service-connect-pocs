@@ -38,21 +38,43 @@ resources:
           prefix_ranges:
             - address_prefix: 169.254.1.1
               prefix_len: 32
-          destination_port: 8080
+          destination_port: 11111
         filters:
           - name: envoy.filters.network.http_connection_manager
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-              stat_prefix: remote
+              stat_prefix: remote_1
               route_config:
-                name: outbound_remote_route
+                name: outbound_remote_route_1
                 virtual_hosts:
-                  - name: outbound_remote_service
+                  - name: outbound_remote_service_1
                     domains:
                       - "*"
                     routes:
                       - match: { prefix: "/"}
                         route:
-                          cluster:  remote_cluster
+                          cluster:  remote_cluster_1
+              http_filters:
+                - name: envoy.filters.http.router
+      - filter_chain_match:
+          prefix_ranges:
+            - address_prefix: 169.254.1.2
+              prefix_len: 32
+          destination_port: 22222
+        filters:
+          - name: envoy.filters.network.http_connection_manager
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              stat_prefix: remote_2
+              route_config:
+                name: outbound_remote_route_2
+                virtual_hosts:
+                  - name: outbound_remote_service_2
+                    domains:
+                      - "*"
+                    routes:
+                      - match: { prefix: "/"}
+                        route:
+                          cluster:  remote_cluster_2
               http_filters:
                 - name: envoy.filters.http.router

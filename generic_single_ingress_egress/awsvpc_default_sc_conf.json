@@ -23,14 +23,6 @@
     {
       "hostName": "dep2.my.corp",
       "ipv4Address": "169.254.1.2"
-    },
-    {
-      "hostName": "dep3.my.corp",
-      "ipv4Address": "169.254.1.3"
-    },
-    {
-      "hostName": "dep4.my.corp",
-      "ipv4Address": "169.254.1.4"
     }
   ]
 

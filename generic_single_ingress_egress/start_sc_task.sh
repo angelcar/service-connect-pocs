@@ -43,22 +43,36 @@ done
 
 if [ "${scIngress}" == "0" ]
 then
-  scConfig=$(jq ".ingressConfig[0] += {\"interceptPort\":${serverPort}}  | @json" awsvpc_default_sc_conf.json)
+  scConfig=$(jq ".ingressConfig[0] += {\"interceptPort\":${serverPort}}" awsvpc_default_sc_conf.json)
 else
   scConfig=$(jq ".dnsConfig[0].hostName=\"${dependencies}.my.corp\" | .ingressConfig[0] += {\"listenerPort\":${scIngress}}" awsvpc_default_sc_conf.json)
 fi
 
+if [ "${dependencies}" != "none" ]
+then
+  IFS=',' read -r -a deps <<< "${dependencies}"
+  for i in "${!deps[@]}"; do
+    IFS=':' read -r -a depElems <<< "${deps[$i]}"
+    scConfig=$(echo $scConfig | jq ".dnsConfig[${i}].hostName=\"${depElems[0]}\"")
+  done
 
-i=1
-IFS=',' read -r -a deps <<< "${dependencies}"
-for dep in "${deps[@]}"; do
-  scConfig=$(echo $scConfig | jq ".dnsConfig[$((i-1))].hostName=\"${dep}.my.corp\"")
-  i=$((i+1))
-done
+  scConfig=$(echo $scConfig | jq "@json")
+  overridesJson=$(jq ".containerOverrides[0].environment[0].value=${scConfig}  | .containerOverrides[0].environment[1].value=\"${serverPort}\" | .containerOverrides[1].environment[0].value=\"${serviceName}\" | .containerOverrides[1].environment[1].value=\"${serverPort}\" | .containerOverrides[1].environment[2].value=\"${otherServerPort}\"" task_overrides.json)
 
-scConfig=$(echo $scConfig | jq "@json")
+  curEnvIdx=2
+  for i in "${!deps[@]}"; do
+    IFS=':' read -r -a depElems <<< "${deps[$i]}"
+    echo $i
+    echo $curEnvIdx
+    overridesJson=$(echo "${overridesJson}" | jq ".containerOverrides[0].environment[$((curEnvIdx+i))].value=\"${depElems[1]}\"")
+    overridesJson=$(echo "${overridesJson}" | jq ".containerOverrides[0].environment[$((curEnvIdx+i+1))].value=\"${depElems[2]}\"")
+    curEnvIdx=$((curEnvIdx+1))
+  done
+else
+  scConfig=$(echo $scConfig | jq "@json")
+  overridesJson=$(jq ".containerOverrides[0].environment[0].value=${scConfig}  | .containerOverrides[0].environment[1].value=\"${serverPort}\" | .containerOverrides[1].environment[0].value=\"${serviceName}\" | .containerOverrides[1].environment[1].value=\"${serverPort}\" | .containerOverrides[1].environment[2].value=\"${otherServerPort}\"" task_overrides.json)
+fi
 
-overridesJson=$(jq ".containerOverrides[0].environment[0].value=${scConfig} | .containerOverrides[0].environment[1].value=\"${serverPort}\" | .containerOverrides[1].environment[0].value=\"${serviceName}\" | .containerOverrides[1].environment[1].value=\"${serverPort}\" | .containerOverrides[1].environment[2].value=\"${otherServerPort}\"" task_overrides.json)
 
 aws ecs run-task \
 --task-definition sc-generic-server-awsvpc \
