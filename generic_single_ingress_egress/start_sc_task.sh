@@ -43,12 +43,20 @@ done
 
 if [ "${scIngress}" == "0" ]
 then
-  scConfig=$(jq ".dnsConfig[0].hostName=\"${dependencies}.my.corp\" | .ingressConfig[0] += {\"interceptPort\":${serverPort}}  | @json" awsvpc_default_sc_conf.json)
+  scConfig=$(jq ".ingressConfig[0] += {\"interceptPort\":${serverPort}}  | @json" awsvpc_default_sc_conf.json)
 else
-  scConfig=$(jq ".dnsConfig[0].hostName=\"${dependencies}.my.corp\" | .ingressConfig[0] += {\"listenerPort\":${scIngress}} | @json" awsvpc_default_sc_conf.json)
+  scConfig=$(jq ".dnsConfig[0].hostName=\"${dependencies}.my.corp\" | .ingressConfig[0] += {\"listenerPort\":${scIngress}}" awsvpc_default_sc_conf.json)
 fi
 
 
+i=1
+IFS=',' read -r -a deps <<< "${dependencies}"
+for dep in "${deps[@]}"; do
+  scConfig=$(echo $scConfig | jq ".dnsConfig[$((i-1))].hostName=\"${dep}.my.corp\"")
+  i=$((i+1))
+done
+
+scConfig=$(echo $scConfig | jq "@json")
 
 overridesJson=$(jq ".containerOverrides[0].environment[0].value=${scConfig} | .containerOverrides[0].environment[1].value=\"${serverPort}\" | .containerOverrides[1].environment[0].value=\"${serviceName}\" | .containerOverrides[1].environment[1].value=\"${serverPort}\" | .containerOverrides[1].environment[2].value=\"${otherServerPort}\"" task_overrides.json)
 
