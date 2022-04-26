@@ -6,6 +6,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOPROXY=direct go build -a -installsuffix cgo -o se
 
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add curl
 WORKDIR /root/
 COPY --from=build /go/src/server/server ./
 CMD ["./server"]
